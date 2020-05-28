@@ -1,7 +1,7 @@
 # NOTE: update this with your service name
 service: notes-app-api
 
-# Create an optimized package for our functions 
+# Create an optimized package for our functions
 package:
   individually: true
 
@@ -20,13 +20,33 @@ provider:
   # the following line. Also, make sure to not
   # commit your .env.
   #
-  #environment:
+  environment:
+    tableNames: notes
   #  SAMPLE_ENV_VAR: ${env:SAMPLE_ENV_VAR}
 
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      Resource: 'arn:aws:dynamodb:us-east-1:*:*'
+
 functions:
-  hello:
-    handler: handler.hello
+  # Defines an HTTP Api endpoint that calls the main function in create.js
+  # - path : url path is /notes
+  # - method : POST Request
+  #  - cors : enabled
+  # - authorizer : authenticate using the AWS IAM Role
+  create:
+    handler: create.main
     events:
       - http:
-          path: hello
-          method: get
+          path: notes
+          method: post
+          cors: true
+          authorizer: aws_iam
